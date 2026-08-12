@@ -1,100 +1,144 @@
-import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useEffect, useState } from "react";
+import { Icon } from "@iconify/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { useLanguage } from "../i18n/useLanguage";
+
+const sectionIds = ["home", "work", "services", "contact"];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState("home");
+  const reduceMotion = useReducedMotion();
+  const { language, setLanguage, content } = useLanguage();
+  const { nav } = content;
 
-  const handleNavClick = (e, target) => {
-    e.preventDefault();
+  const navItems = [
+    { id: "home", label: nav.home },
+    { id: "work", label: nav.projects },
+    { id: "services", label: nav.skills },
+    { id: "contact", label: nav.contact },
+  ];
+
+  useEffect(() => {
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visibleSection = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+        if (visibleSection) setActiveSection(visibleSection.target.id);
+      },
+      { rootMargin: "-18% 0px -62%", threshold: [0, 0.1, 0.25, 0.5] },
+    );
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, []);
+
+  const handleNavClick = (event, target) => {
+    event.preventDefault();
     setIsOpen(false);
-    const el = document.querySelector(target);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveSection(target.slice(1));
+    document.querySelector(target)?.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "start",
+    });
   };
 
-  function Navigation() {
-    return (
-      <ul className="nav-ul flex flex-col items-center gap-6 py-6 sm:flex-row sm:gap-10 sm:py-0">
-        <li className="nav-li">
-          <a href="#home" onClick={(e) => handleNavClick(e, "#home")}>
-            Home
-          </a>
-        </li>
-        <li className="nav-li">
-          <a href="#about" onClick={(e) => handleNavClick(e, "#about")}>
-            About
-          </a>
-        </li>
-        <li className="nav-li">
-          <a href="#work" onClick={(e) => handleNavClick(e, "#work")}>
-            Projects
-          </a>
-        </li>
-        <li className="nav-li">
-          <a href="#services" onClick={(e) => handleNavClick(e, "#services")}>
-            Skills
-          </a>
-        </li>
-        <li className="nav-li">
-          <a href="#contact" onClick={(e) => handleNavClick(e, "#contact")}>
-            Contact
-          </a>
-        </li>
+  const navigation = (label) => (
+    <nav aria-label={label}>
+      <ul className="portfolio-nav-list">
+        {navItems.map((item) => (
+          <li key={item.id}>
+            <a
+              href={`#${item.id}`}
+              className={activeSection === item.id ? "is-active" : ""}
+              aria-current={activeSection === item.id ? "location" : undefined}
+              onClick={(event) => handleNavClick(event, `#${item.id}`)}
+            >
+              <span aria-hidden="true" />
+              {item.label}
+            </a>
+          </li>
+        ))}
       </ul>
-    );
-  }
+    </nav>
+  );
 
   return (
-    <div className="fixed inset-x-0 top-0 z-20 w-full backdrop-blur-lg bg-primary/40">
-      <div className="mx-auto c-space max-w-7xl">
-        <div className="flex items-center justify-between py-2 sm:py-0">
-          <a
-            href="#home"
-            onClick={(e) => handleNavClick(e, "#home")}
-            className="text-xl font-bold transition-colors text-neutral-400 hover:text-white"
-          >
-            Pablo Chuquimia
-          </a>
+    <header className="portfolio-navbar">
+      <div className="portfolio-navbar-shell">
+        <a
+          href="#home"
+          className="portfolio-navbar-brand"
+          onClick={(event) => handleNavClick(event, "#home")}
+        >
+          <span>Pablo Iván Chuquimia</span>
+          <small>{content.hero.role}</small>
+        </a>
 
-          {/* Botón mobile */}
+        <div className="portfolio-navbar-desktop">
+          {navigation(nav.mainLabel)}
+        </div>
+
+        <div className="portfolio-navbar-actions">
+          <div className="portfolio-language-switch" role="group" aria-label={nav.language}>
+            {(["es", "en"]).map((option) => (
+              <button
+                key={option}
+                type="button"
+                lang={option}
+                className={language === option ? "is-active" : ""}
+                aria-label={option === "es" ? nav.spanish : nav.english}
+                aria-pressed={language === option}
+                onClick={() => setLanguage(option)}
+              >
+                {option.toUpperCase()}
+              </button>
+            ))}
+          </div>
+
           <button
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
+            type="button"
+            className="portfolio-navbar-menu-button"
+            onClick={() => setIsOpen((current) => !current)}
+            aria-label={isOpen ? nav.closeMenu : nav.openMenu}
             aria-controls="mobile-menu"
             aria-expanded={isOpen}
-            className="flex cursor-pointer text-neutral-400 hover:text-white focus:outline-none sm:hidden"
           >
-            <img
-              src={isOpen ? "/assets/close.svg" : "/assets/menu.svg"}
-              className="w-6 h-6"
-              alt=""
-            />
+            <Icon icon={isOpen ? "lucide:x" : "lucide:menu"} aria-hidden="true" />
           </button>
-
-          {/* Nav desktop */}
-          <nav className="hidden sm:flex" aria-label="Main">
-            <Navigation />
-          </nav>
         </div>
       </div>
 
-      {/* Nav mobile */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
             id="mobile-menu"
-            className="block overflow-hidden text-center sm:hidden border-t border-white/10 bg-black/80"
-            initial={{ opacity: 0, y: -12 }}
+            className="portfolio-navbar-mobile"
+            initial={reduceMotion ? false : { opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.25 }}
+            exit={reduceMotion ? undefined : { opacity: 0, y: -10 }}
+            transition={{ duration: reduceMotion ? 0 : 0.2 }}
           >
-            <nav className="pb-5" aria-label="Mobile">
-              <Navigation />
-            </nav>
+            {navigation(nav.mobileLabel)}
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </header>
   );
 };
 

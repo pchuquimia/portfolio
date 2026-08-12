@@ -1,7 +1,11 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Icon } from "@iconify/react";
+import { useLanguage } from "../i18n/useLanguage";
 
 const ProjectDetails = ({ project, open, onClose }) => {
+  const { content } = useLanguage();
+  const labels = content.projects.modal;
+
   return (
     <AnimatePresence>
       {open && project && (
@@ -24,7 +28,7 @@ const ProjectDetails = ({ project, open, onClose }) => {
             <button
               onClick={onClose}
               className="absolute top-4 right-4 grid place-items-center rounded-md bg-midnight/70 p-2 hover:bg-white/10"
-              aria-label="Close"
+              aria-label={labels.close}
             >
               <Icon icon="lucide:x" className="size-5 text-white/80" />
             </button>
@@ -33,7 +37,7 @@ const ProjectDetails = ({ project, open, onClose }) => {
             {project.href && project.href.trim() !== "" ? (
               <iframe
                 src={project.href}
-                title={`${project.name} website`}
+                title={`${project.name} ${labels.website}`}
                 className="
    w-full
   max-w-[1440px]
@@ -81,14 +85,16 @@ const ProjectDetails = ({ project, open, onClose }) => {
               {/* Acciones */}
               <div className="mt-6 flex items-center justify-between">
                 <span className="text-xs text-white/50">
-                  Click afuera para cerrar
+                  {labels.outside}
                 </span>
                 {project.href && project.href.trim() !== "" && (
                   <a
                     href={project.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white hover:bg-white/20"
                   >
-                    View Project
+                    {labels.view}
                     <Icon icon="lucide:arrow-up-right" className="size-4" />
                   </a>
                 )}

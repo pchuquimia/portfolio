@@ -3,7 +3,7 @@ import { FlipWords } from "./FlipWords";
 import { motion } from "motion/react";
 
 const HeroText = () => {
-  const words = ["Armónicas", "Precisas", "Creativas"];
+  const words = ["Claras", "Rápidas", "Intuitivas"];
   const variants = {
     hidden: { opacity: 0, x: -50 },
     visible: { opacity: 1, x: 0 },
@@ -19,7 +19,7 @@ const HeroText = () => {
           animate={"visible"}
           transition={{ delay: 1 }}
         >
-          Hola, soy Pablo
+          Hola, soy Pablo Iván
         </motion.h1>
         <div className="flex flex-col items-start">
           <motion.p
@@ -29,9 +29,9 @@ const HeroText = () => {
             animate={"visible"}
             transition={{ delay: 1.2 }}
           >
-            Un desarrollador Jr.
+            Frontend Developer
             <br />
-            dedicado a crear soluciones
+            creando interfaces
           </motion.p>
           {/*<div>get flip word from aceternity</div>*/}
         </div>
@@ -50,7 +50,7 @@ const HeroText = () => {
           animate={"visible"}
           transition={{ delay: 1.8 }}
         >
-          para la web
+          con React y JavaScript
         </motion.p>
       </div>
       {/*Mobile View*/}
@@ -62,7 +62,7 @@ const HeroText = () => {
           animate={"visible"}
           transition={{ delay: 1 }}
         >
-          Hola, soy Pablo
+          Hola, soy Pablo Iván
         </motion.p>
         <div>
           <motion.p
@@ -72,7 +72,7 @@ const HeroText = () => {
             animate={"visible"}
             transition={{ delay: 1.2 }}
           >
-            Creo experiencias digitales
+            Creo interfaces web
           </motion.p>
           <motion.div
             variants={variants}
@@ -92,7 +92,7 @@ const HeroText = () => {
             animate={"visible"}
             transition={{ delay: 1.8 }}
           >
-            que inspiran
+            con React y JavaScript
           </motion.p>
         </div>
       </div>
