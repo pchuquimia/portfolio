@@ -1,80 +1,84 @@
-import { useRef } from "react";
+import { useState } from "react";
+import { Icon } from "@iconify/react";
+import { motion, useReducedMotion } from "motion/react";
 import AnimatedHeaderSection from "../components/AnimatedHeaderSection";
-import { servicesData } from "../constants";
-import { useMediaQuery } from "react-responsive";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
+import { useLanguage } from "../i18n/useLanguage";
+
 const Services = () => {
-  const text = `Construyo aplicaciones seguras y de alto rendimiento,
-con una experiencia de usuario fluida
- que impulsa el crecimiento,
-no los dolores de cabeza.`;
-  const serviceRefs = useRef([]);
-  const isDesktop = useMediaQuery({ minWidth: "48rem" }); //768px
+  const reduceMotion = useReducedMotion();
+  const [openSkill, setOpenSkill] = useState(0);
+  const { content } = useLanguage();
+  const { skills } = content;
 
-  useGSAP(() => {
-    serviceRefs.current.forEach((el) => {
-      if (!el) return;
-
-      gsap.from(el, {
-        y: 200,
-        scrollTrigger: {
-          trigger: el,
-          start: "top 80%",
-        },
-        duration: 1,
-        ease: "circ.out",
-      });
-    });
-  }, []);
   return (
-    <section id="services" className="min-h-screen bg-black rounded-t-4xl">
+    <section id="services" className="skills-section" aria-labelledby="skills-title">
       <AnimatedHeaderSection
-        subTitle={"Behind the scene, Beyond the screen"}
-        title={"Technical Skills"}
-        text={text}
-        textColor={"text-white"}
-        withScrollTrigger={true}
+        subTitle={skills.subtitle}
+        title={skills.title}
+        titleId="skills-title"
+        titleClassName="editorial-section-title"
+        text={skills.intro}
+        textColor="text-white"
+        withScrollTrigger
       />
-      {servicesData.map((service, index) => (
-        <div
-          ref={(el) => (serviceRefs.current[index] = el)}
-          key={index}
-          className="sticky px-10 pt-6 pb-12 text-white bg-black border-t-2 border-white/30"
-          style={
-            isDesktop
-              ? {
-                  top: `calc(10vh + ${index * 5}em)`,
-                  marginBottom: `${(servicesData.length - index - 1) * 5}rem`,
-                }
-              : { top: 0 }
-          }
-        >
-          <div className="flex items-center justify-between gap-4 font-light">
-            <div className="flex flex-col gap-6">
-              <h2 className="text-4xl lg:text-5xl">{service.title}</h2>
-              <p className="text-xl leading-relaxed tracking-widest lg:text-2xl text-white/60 text-pretty">
-                {service.description}
+
+      <div className="skills-list">
+        {skills.groups.map((service, index) => (
+          <motion.article
+            key={service.title}
+            className={`skills-card${openSkill === index ? " is-open" : ""}`}
+            initial={reduceMotion ? false : { opacity: 0, y: 36 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.16 }}
+            transition={{ duration: reduceMotion ? 0 : 0.5, ease: "easeOut" }}
+          >
+            <button
+              type="button"
+              className="skills-card-heading"
+              onClick={() => setOpenSkill((current) => (current === index ? -1 : index))}
+              aria-expanded={openSkill === index}
+              aria-controls={`skill-panel-${index}`}
+            >
+              <p className="skills-card-index">
+                {String(index + 1).padStart(2, "0")} / {String(skills.groups.length).padStart(2, "0")}
               </p>
-              <div className="flex flex-col gap-2 text-2xl sm:gap-4 lg:text-3xl text-white/80">
-                {service.items.map((item, itemIndex) => (
-                  <div key={`item-${index}-${itemIndex}`}>
-                    <h3 className="flex">
-                      <span className="mr-12 text-lg text-white/30">
-                        0{itemIndex + 1}
-                      </span>
-                      {item.title}
-                    </h3>
-                    {itemIndex < service.items.length - 1 && (
-                      <div className="w-full h-px my-2 bg-white/30" />
-                    )}
-                  </div>
-                ))}
+              <div>
+                <p className="skills-card-label">{service.label}</p>
+                <h3>{service.title}</h3>
+              </div>
+              <span className="skills-card-toggle" aria-hidden="true">
+                <Icon icon="lucide:plus" />
+              </span>
+            </button>
+
+            <div
+              id={`skill-panel-${index}`}
+              className="skills-card-panel"
+              aria-hidden={openSkill !== index}
+            >
+              <div className="skills-card-panel-inner">
+                <p className="skills-card-summary">{service.description}</p>
+
+                <ul className="skills-technologies" aria-label={`${skills.technologies} ${service.title}`}>
+                  {service.technologies.map((technology) => (
+                    <li key={technology}>{technology}</li>
+                  ))}
+                </ul>
+
+                <div className="skills-capabilities">
+                  {service.items.map((item, itemIndex) => (
+                    <section key={item.title} className="skills-capability">
+                      <p aria-hidden="true">0{itemIndex + 1}</p>
+                      <h4>{item.title}</h4>
+                      <p>{item.description}</p>
+                    </section>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      ))}
+          </motion.article>
+        ))}
+      </div>
     </section>
   );
 };

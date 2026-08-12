@@ -1,82 +1,132 @@
-import { useGSAP } from "@gsap/react";
-import AnimatedHeaderSection from "../components/AnimatedHeaderSection";
-import Marquee from "../components/Marquee";
+import { Icon } from "@iconify/react";
+import { motion, useReducedMotion } from "motion/react";
 import { socials } from "../constants";
-import gsap from "gsap";
+import { useLanguage } from "../i18n/useLanguage";
+
+const resourceKeys = ["linkedin", "github", "apex", "cvEs", "cvEn"];
+
+const resourceIcons = {
+  linkedin: "lucide:linkedin",
+  github: "lucide:github",
+  apex: "lucide:dumbbell",
+  cvEs: "lucide:file-down",
+  cvEn: "lucide:file-down",
+};
 
 const Contact = () => {
-  const text = `Construyamos algo que marque la diferencia.  
-Tu idea, mi código.`;
-  const items = [
-    "just imagin, just code",
-    "just imagin, just code",
-    "just imagin, just code",
-    "just imagin, just code",
-    "just imagin, just code",
-  ];
-  useGSAP(() => {
-    gsap.from(".social-link", {
-      y: 100,
-      opacity: 0,
-      delay: 0.5,
-      duration: 1,
-      stagger: 0.3,
-      ease: "back.out",
-      scrollTrigger: {
-        trigger: ".social-link",
-      },
-    });
-  }, []);
+  const reduceMotion = useReducedMotion();
+  const { content } = useLanguage();
+  const { contact } = content;
+  const resources = socials.filter((social) => resourceKeys.includes(social.key));
+
+  const reveal = (index) => ({
+    initial: reduceMotion ? false : { opacity: 0, y: 24 },
+    whileInView: { opacity: 1, y: 0 },
+    viewport: { once: true, amount: 0.2 },
+    transition: { duration: reduceMotion ? 0 : 0.45, delay: index * 0.05 },
+  });
+
   return (
-    <section
-      id="contact"
-      className="flex flex-col justify-between min-h-screen "
-    >
-      <div className="mx-auto max-w-7xl min-h-screen px-6 md:px-10">
-        <AnimatedHeaderSection
-          subTitle={"You Dream It, I Code it"}
-          title={"Contact"}
-          text={text}
-          textColor={"text-black"}
-          withScrollTrigger={true}
-        />
-        <div className="flex px-10 font-light text-black uppercase lg:text-[32px] text-[26px] leading-none mb-10 ">
-          <div className="flex flex-col w-full gap-10">
-            <div className="social-link">
-              <h2>Correo</h2>
-              <div className="w-full h-px my-2 bg-white/30" />
-              <p className="text-xl tracking-wider lowercase md:text-2xl lg:text-3xl">
-                i.pouk.19@gmail.com
-              </p>
-            </div>
-            <div className="social-link">
-              <h2>Phone</h2>
-              <div className="w-full h-px my-2 bg-white/30" />
-              <p className="text-xl lowercase md:text-2xl lg:text-3xl">
+    <section id="contact" className="contact-section" aria-labelledby="contact-title">
+      <motion.header className="contact-header" {...reveal(0)}>
+        <p>{contact.subtitle}</p>
+        <div>
+          <h2 id="contact-title">{contact.title}</h2>
+          <p>{contact.intro}</p>
+        </div>
+      </motion.header>
+
+      <div className="contact-shell">
+        <motion.div className="contact-primary" {...reveal(0)}>
+          <p className="contact-kicker">{contact.kicker}</p>
+          <h3>{contact.headline}</h3>
+
+          <div className="contact-direct-actions">
+            <a
+              className="contact-direct-link contact-direct-link--primary"
+              href="mailto:pablo.ivan.chuquimia@gmail.com"
+              aria-label={`${contact.emailAction}: pablo.ivan.chuquimia@gmail.com`}
+            >
+              <span>
+                <small>{contact.email}</small>
+                pablo.ivan.chuquimia@gmail.com
+              </span>
+              <Icon icon="lucide:arrow-up-right" aria-hidden="true" />
+            </a>
+            <a
+              className="contact-direct-link"
+              href="tel:+59179573025"
+              aria-label={`${contact.phoneAction}: +591 79573025`}
+            >
+              <span>
+                <small>{contact.phone}</small>
                 +591 79573025
-              </p>
-            </div>
-            <div className="social-link">
-              <h2>Redes Sociales</h2>
-              <div className="w-full h-px my-2 bg-white/30" />
-              <div className="flex flex-wrap gap-2">
-                {socials.map((social, index) => (
-                  <a
-                    key={index}
-                    href={social.href}
-                    className="text-xs leading-loose tracking-wides uppercase md:text-sm hover:text-white/80 transition-colors duration-200"
-                  >
-                    {"{ "}
-                    {social.name}
-                    {" }"}
-                  </a>
-                ))}
-              </div>
-            </div>
+              </span>
+              <Icon icon="lucide:message-circle" aria-hidden="true" />
+            </a>
           </div>
+
+          <p className="contact-summary">{contact.summary}</p>
+
+          <dl className="contact-context">
+            <div>
+              <dt>{contact.locationLabel}</dt>
+              <dd>La Paz, Bolivia</dd>
+            </div>
+            <div>
+              <dt>{contact.availabilityLabel}</dt>
+              <dd>{contact.availability}</dd>
+            </div>
+          </dl>
+        </motion.div>
+
+        <div className="contact-resources" aria-labelledby="contact-resources-title">
+          <div className="contact-resources-heading">
+            <p>{contact.resourcesEyebrow}</p>
+            <h3 id="contact-resources-title">{contact.resourcesTitle}</h3>
+          </div>
+
+          <ul className="contact-resource-list">
+            {resources.map((resource, index) => {
+              const isExternal = resource.href.startsWith("http");
+              const isDownload = resource.key === "cvEs" || resource.key === "cvEn";
+              const resourceContent = contact.resources[resource.key];
+
+              return (
+                <motion.li key={resource.key} {...reveal(index + 1)}>
+                  <a
+                    href={resource.href}
+                    target={isExternal ? "_blank" : undefined}
+                    rel={isExternal ? "noopener noreferrer" : undefined}
+                    download={isDownload || undefined}
+                    aria-label={`${resourceContent.name}. ${resourceContent.description}. ${isDownload ? contact.download : contact.open}`}
+                  >
+                    <span className="contact-resource-icon" aria-hidden="true">
+                      <Icon icon={resourceIcons[resource.key]} />
+                    </span>
+                    <span className="contact-resource-copy">
+                      <strong>{resourceContent.name}</strong>
+                      <small>{resourceContent.description}</small>
+                    </span>
+                    <span className="contact-resource-action" aria-hidden="true">
+                      {isDownload ? contact.download : contact.open}
+                      <Icon icon={isDownload ? "lucide:download" : "lucide:arrow-up-right"} />
+                    </span>
+                  </a>
+                </motion.li>
+              );
+            })}
+          </ul>
         </div>
       </div>
-      <Marquee items={items} className="text-black bg-transparent" />
+
+      <footer className="contact-footer">
+        <p>© {new Date().getFullYear()} Pablo Iván Chuquimia Huanca</p>
+        <a href="#home">
+          {contact.backToTop}
+          <Icon icon="lucide:arrow-up" aria-hidden="true" />
+        </a>
+      </footer>
     </section>
   );
 };
